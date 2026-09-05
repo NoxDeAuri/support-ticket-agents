@@ -151,6 +151,8 @@ actual judgment — see the "Status" section.
 
 
 
+## Failure recovery (Day 7 + output validation)
+
 Tested by deliberately breaking each layer:
 
 | Failure injected | Behavior |
@@ -159,11 +161,18 @@ Tested by deliberately breaking each layer:
 | ...LLM never recovers | Action agent fails safe to `escalated`, never fabricates a resolution |
 | MCP server unreachable | Retrieval retries 2x, then continues with empty context (doesn't crash the pipeline) |
 | Empty context reaches action agent | Correctly escalates rather than inventing a fix from nothing |
+| Model returns valid JSON, `"decision": "resolved"`, but an empty `"message"` | **Real bug found running against a local 1B model, not a hypothetical:** parsing succeeded, so the earlier `ValueError` fail-safe never fired, and the pipeline reported "resolved" with a blank resolution shown to the user. Fixed by validating output *content*, not just output *shape* — see `agents/action.py` |
+| Model decides `"resolved"` with a plausible-sounding message but zero matching past tickets | Also caught live: the model violated its own prompt instruction ("escalate when no similar past ticket exists"). Fixed by moving that rule out of the prompt and into a hard code-level check in `agents/action.py` — the decision is now overridden to `escalated` regardless of what the model outputs, and the model's original (ungrounded) message is preserved in the escalation note for context |
 
 The core design decision: **fail open on data (empty context), fail
-closed on decisions (escalate, don't auto-resolve)**. A missing past
-ticket shouldn't crash the pipeline; an agent that isn't confident
-should never silently pretend it resolved something.
+closed on decisions (escalate, don't auto-resolve)** — and now also:
+**validate the model's output, don't just parse it.** A response can
+be syntactically perfect JSON and still be operationally wrong; the
+two bugs above only got caught because a small model was actually run
+against real inputs, which is exactly the argument for testing
+against a weak local model during development even if Claude is the
+production choice — it surfaces failure modes a stronger model
+papers over.
 
 
 Day 6 wires the *retrieval agent's data access* through MCP — that's
