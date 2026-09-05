@@ -36,9 +36,14 @@ _STATUS_STYLES = {
 }
 
 
-def show_ticket_header(ticket_id: str, subject: str) -> None:
+def show_ticket_header(ticket_id: str, subject: str, body: str = "",
+                        customer_id: str | None = None) -> None:
     console.print()
     console.rule(f"[bold blue]{ticket_id}[/bold blue] — {subject}")
+    if body:
+        console.print(f"[dim]Body:[/dim] {body}")
+    if customer_id:
+        console.print(f"[dim]Customer:[/dim] {customer_id}")
 
 
 @contextmanager
@@ -69,6 +74,28 @@ def show_step_result(agent_name: str, step: dict, elapsed: float) -> None:
         f"[{style}]{agent_name:10}[/{style}] -> {step.get('action', ''):20} "
         f"[dim]{detail}[/dim]"
     )
+
+
+def show_retrieved_context(context: dict) -> None:
+    """
+    Shows what the retrieval agent actually found — the most useful
+    moment for someone watching a demo to see *why* the action agent
+    decided what it did, rather than treating it as a black box.
+    """
+    similar = context.get("similar_past_tickets") or []
+    tier = context.get("customer_tier")
+
+    if tier:
+        console.print(f"    [dim]Customer tier:[/dim] {tier}")
+
+    if similar:
+        console.print(f"    [dim]Similar past tickets found:[/dim]")
+        for t in similar:
+            console.print(f"      • {t.get('ticket_id', '?')}: "
+                          f"{t.get('subject', '')} "
+                          f"[dim]→ {t.get('resolution', '')[:60]}[/dim]")
+    else:
+        console.print(f"    [dim]No similar past tickets found.[/dim]")
 
 
 def show_final_summary(message: dict) -> None:

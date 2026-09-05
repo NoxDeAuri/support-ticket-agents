@@ -61,20 +61,33 @@ see `llm_client.py`.
 
 ## Live terminal UI
 
-By default, `main.py` shows live progress via `rich`: a spinner while
-each agent works, a timed result line the moment it finishes, a boxed
-final-result panel per ticket (green for resolved, yellow for
-escalated), and a run summary table at the end. Built specifically
-for demos — a screen recording shows visible work happening in real
-time instead of a silent pause followed by a text dump.
+By default, `main.py` shows live progress via `rich`: the full ticket
+body and customer ID (not just the subject line), a spinner while
+each agent works, a timed result line the moment it finishes, the
+actual similar past tickets the retrieval agent found (with which one
+drove the final decision), a boxed final-result panel per ticket
+(green for resolved, yellow for escalated), and a run summary table.
+Built specifically for demos — a screen recording shows visible work
+happening in real time, and *why* the action agent decided what it
+did, instead of a silent pause followed by a text dump.
 
-    python main.py                 # live UI (default)
+    python main.py                 # sample tickets, live UI (default)
+    python main.py --interactive   # type your own ticket and watch it process
     python main.py --plain         # plain text, no rich formatting — useful for logs/CI
+
+`--interactive` first offers a ready-made example ticket (press Enter
+to run it, or type `c` for your own) — the example is picked to match
+a ticket already in the seeded DB, so accepting it demonstrates the
+"similar past ticket found" context display on the first try, rather
+than dropping you into a blank prompt or an empty-context escalation.
+Typing `c` prompts for a subject, a multi-line body (blank line twice
+to finish), and an optional customer ID.
 
 `display.py` holds all the rendering logic and has no business logic
 in it, so `agents/*.py` and the orchestration in `main.py` stay fully
 testable without a real terminal (verified with a recorded/captured
-`rich.Console` swapped in for the live one during development).
+`rich.Console` swapped in for the live one, and with `input()` mocked
+for the interactive-mode tests, during development).
 
 ## Verify the MCP layer independently (no API key needed)
 
