@@ -59,6 +59,23 @@ point (an API server, a test runner, etc.), replicate that same
 see `llm_client.py`.
 
 
+## Live terminal UI
+
+By default, `main.py` shows live progress via `rich`: a spinner while
+each agent works, a timed result line the moment it finishes, a boxed
+final-result panel per ticket (green for resolved, yellow for
+escalated), and a run summary table at the end. Built specifically
+for demos — a screen recording shows visible work happening in real
+time instead of a silent pause followed by a text dump.
+
+    python main.py                 # live UI (default)
+    python main.py --plain         # plain text, no rich formatting — useful for logs/CI
+
+`display.py` holds all the rendering logic and has no business logic
+in it, so `agents/*.py` and the orchestration in `main.py` stay fully
+testable without a real terminal (verified with a recorded/captured
+`rich.Console` swapped in for the live one during development).
+
 ## Verify the MCP layer independently (no API key needed)
 
     python -c "

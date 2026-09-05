@@ -2,6 +2,7 @@
 # Ollama exposes an OpenAI-compatible endpoint.
 openai
 mcp
+rich
 
 # Only needed if you switch LLM_PROVIDER=anthropic (see README):
 # anthropic
