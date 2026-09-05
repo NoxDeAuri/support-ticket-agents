@@ -1,0 +1,7 @@
+# Default provider: Ollama (free, local) — needs the openai SDK since
+# Ollama exposes an OpenAI-compatible endpoint.
+openai
+mcp
+
+# Only needed if you switch LLM_PROVIDER=anthropic (see README):
+# anthropic
